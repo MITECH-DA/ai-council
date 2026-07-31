@@ -3,8 +3,8 @@
 사업가 · 재무전문가 · 법무사 · 리스크매니저, 4개의 AI 페르소나가 하나의 안건을 놓고 순차적으로 토론하고, 사회자가 마지막에 종합 정리하는 서비스입니다.
 
 ## 준비물
+- Claude API 키 (`sk-ant-`로 시작, 필요 시 https://console.anthropic.com 에서 발급)
 
-- Claude API 키 (https://console.anthropic.com 에서 발급, `sk-ant-`로 시작)
 
 ## 최초 접속
 
