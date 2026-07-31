@@ -57,6 +57,9 @@
 
   .stamp{display:inline-block;border:2px solid var(--risk);color:var(--risk);font-weight:700;font-size:13px;padding:5px 12px;border-radius:4px;transform:rotate(-4deg);margin-top:10px;font-family:'Noto Serif KR',serif;}
   .err{color:#F3B3AC;font-size:13px;margin-top:10px;}
+  #exportBtn{background:transparent;border:1px solid var(--ink);color:var(--ink);font-weight:500;}
+  #exportBtn:disabled{border-color:#C9C4B5;color:#B0AB9C;background:transparent;}
+  #exportBtn:hover:not(:disabled){background:var(--ink);color:var(--paper);}
 </style>
 </head>
 <body>
@@ -96,7 +99,10 @@
   <div class="minutes">
     <div class="minutes-head">
       <h2>회의록</h2>
-      <span id="meta">대기중</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span id="meta">대기중</span>
+        <button id="exportBtn" onclick="exportTranscript()" disabled style="padding:5px 12px;font-size:12px;">텍스트로 내보내기</button>
+      </div>
     </div>
     <div id="log"><p class="empty">안건을 입력하고 회의를 시작하세요.</p></div>
   </div>
@@ -106,23 +112,26 @@
 const ROLES = {
   biz: {
     label: "사업가", cls: "biz",
-    system: "당신은 스타트업 대표 출신의 사업가입니다. 시장 기회, 매출 성장, 경쟁 우위, 실행 속도 관점에서만 발언합니다. 재무 리스크나 법적 세부사항은 다른 사람 몫이라 생각하고 언급을 최소화합니다. 회의에서 다른 참석자의 직전 발언에 짧게 반응한 뒤 본인 의견을 말하세요. 3~4문장, 한국어, 실무 화법으로 답하세요."
+    system: "당신은 스타트업 대표 출신의 사업가입니다. 시장 기회, 매출 성장, 경쟁 우위, 실행 속도 관점에서만 발언합니다. 재무 리스크나 법적 세부사항은 다른 사람 몫이라 생각하고 언급을 최소화합니다. 회의에서 다른 참석자의 직전 발언에 짧게 반응한 뒤 본인 의견을 말하세요. 마크다운 기호 없이 일반 텍스트로, 3~4문장, 한국어, 실무 화법으로 답하세요."
   },
   fin: {
     label: "재무전문가", cls: "fin",
-    system: "당신은 20년 경력의 재무 전문가(CFO 출신)입니다. ROI, 현금흐름, 손익분기점, 기회비용 관점에서만 발언합니다. 숫자나 구체적 재무 논리를 최소 1개 언급하세요(가정치라도 명시). 회의에서 다른 참석자의 직전 발언에 짧게 반응한 뒤 본인 의견을 말하세요. 3~4문장, 한국어, 보수적이고 신중한 화법으로 답하세요."
+    system: "당신은 20년 경력의 재무 전문가(CFO 출신)입니다. ROI, 현금흐름, 손익분기점, 기회비용 관점에서만 발언합니다. 숫자나 구체적 재무 논리를 최소 1개 언급하세요(가정치라도 명시). 회의에서 다른 참석자의 직전 발언에 짧게 반응한 뒤 본인 의견을 말하세요. 마크다운 기호 없이 일반 텍스트로, 3~4문장, 한국어, 보수적이고 신중한 화법으로 답하세요."
   },
   law: {
     label: "법무사", cls: "law",
-    system: "당신은 규제 대응 전문 법무사입니다. 계약 리스크, 인허가/컴플라이언스, 책임소재 관점에서만 발언합니다. 의료기기·수출 등 규제산업이 언급되면 관련 인허가 이슈를 짚으세요. 회의에서 다른 참석자의 직전 발언에 짧게 반응한 뒤 본인 의견을 말하세요. 3~4문장, 한국어, 신중하고 절제된 화법으로 답하세요."
+    system: "당신은 규제 대응 전문 법무사입니다. 계약 리스크, 인허가/컴플라이언스, 책임소재 관점에서만 발언합니다. 의료기기·수출 등 규제산업이 언급되면 관련 인허가 이슈를 짚으세요. 회의에서 다른 참석자의 직전 발언에 짧게 반응한 뒤 본인 의견을 말하세요. 마크다운 기호 없이 일반 텍스트로, 3~4문장, 한국어, 신중하고 절제된 화법으로 답하세요."
   },
   risk: {
     label: "리스크매니저", cls: "risk",
-    system: "당신은 리스크관리 담당 임원입니다. 실패 시나리오, 운영 리스크, 컨틴전시 플랜 관점에서만 발언합니다. 항상 '만약 ~라면' 형태로 최악의 시나리오 하나를 구체적으로 짚으세요. 회의에서 다른 참석자의 직전 발언에 짧게 반응한 뒤 본인 의견을 말하세요. 3~4문장, 한국어, 냉정한 화법으로 답하세요."
+    system: "당신은 리스크관리 담당 임원입니다. 실패 시나리오, 운영 리스크, 컨틴전시 플랜 관점에서만 발언합니다. 항상 '만약 ~라면' 형태로 최악의 시나리오 하나를 구체적으로 짚으세요. 회의에서 다른 참석자의 직전 발언에 짧게 반응한 뒤 본인 의견을 말하세요. 마크다운 기호 없이 일반 텍스트로, 3~4문장, 한국어, 냉정한 화법으로 답하세요."
   }
 };
 const ORDER = ["biz","fin","law","risk"];
 let history = [];
+let currentAgenda = '';
+let moderatorSummary = '';
+let currentRounds = 0;
 
 const apiKeyInput = document.getElementById('apiKey');
 apiKeyInput.value = localStorage.getItem('claude_api_key') || '';
@@ -132,6 +141,14 @@ apiKeyInput.addEventListener('change', () => {
 
 function escapeHtml(s){
   return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function mdToHtml(raw){
+  let s = escapeHtml(raw);
+  s = s.replace(/^#{2,4}\s*(.*)$/gm, '<strong style="display:block;margin-top:10px;">$1</strong>');
+  s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/^---$/gm, '');
+  return s;
 }
 
 function setSeat(key, status, active){
@@ -186,7 +203,7 @@ function appendEntry(cls, label, text, isTyping){
   const div = document.createElement('div');
   div.className = 'entry';
   div.id = isTyping ? 'typing-entry' : '';
-  div.innerHTML = `<span class="who ${cls}">${label}</span><p>${isTyping ? '<span class="typing">발언 준비중</span>' : escapeHtml(text)}</p>`;
+  div.innerHTML = `<span class="who ${cls}">${label}</span><p>${isTyping ? '<span class="typing">발언 준비중</span>' : mdToHtml(text)}</p>`;
   log.appendChild(div);
   log.scrollTop = log.scrollHeight;
   return div;
@@ -200,9 +217,13 @@ async function startMeeting(){
   const rounds = parseInt(document.getElementById('rounds').value, 10);
   const btn = document.getElementById('startBtn');
   btn.disabled = true; btn.textContent = '진행중...';
+  document.getElementById('exportBtn').disabled = true;
   document.getElementById('log').innerHTML = '';
   document.getElementById('meta').textContent = '진행중';
   history = [`[안건] ${agenda}`];
+  currentAgenda = agenda;
+  currentRounds = rounds;
+  moderatorSummary = '';
 
   try{
     for(let r=1; r<=rounds; r++){
@@ -212,7 +233,7 @@ async function startMeeting(){
         const entryDiv = appendEntry(role.cls, `${role.label} · ${r}라운드`, '', true);
         const transcript = history.join('\n\n') + `\n\n---\n지금까지의 회의 내용을 참고하여 ${r}라운드 발언을 하세요. 반드시 완결된 문장으로 끝내세요.`;
         const text = await callAgent(role.system, transcript, 700);
-        entryDiv.innerHTML = `<span class="who ${role.cls}">${role.label} · ${r}라운드</span><p>${escapeHtml(text)}</p>`;
+        entryDiv.innerHTML = `<span class="who ${role.cls}">${role.label} · ${r}라운드</span><p>${mdToHtml(text)}</p>`;
         history.push(`[${role.label}] ${text}`);
         setSeat(key, '완료', false);
       }
@@ -221,10 +242,12 @@ async function startMeeting(){
     resetSeats();
     document.getElementById('meta').textContent = '요약 작성중';
     const modDiv = appendEntry('mod', '사회자 종합', '', true);
-    const modSystem = "당신은 회의 사회자입니다. 지금까지 4명(사업가/재무전문가/법무사/리스크매니저)의 발언을 종합해 (1) 각 역할의 핵심 입장 한 줄씩, (2) 의견이 갈리는 지점, (3) 사회자로서의 종합 권고안 순서로 정리하세요. 한국어, 항목별 줄바꿈. 각 항목은 간결하게 쓰되, 반드시 (3) 종합 권고안까지 완결된 문장으로 마무리하세요.";
-    const modText = await callAgent(modSystem, history.join('\n\n') + '\n\n---\n위 회의 내용을 종합 정리하세요.', 1200);
+    const modSystem = "당신은 회의 사회자입니다. 지금까지 4명(사업가/재무전문가/법무사/리스크매니저)의 발언을 종합해 (1) 각 역할의 핵심 입장 한 줄씩, (2) 의견이 갈리는 지점 최대 2가지, (3) 사회자로서의 종합 권고안 순서로 정리하세요. 마크다운 기호(#, **, 번호 매기기)는 쓰지 말고 일반 텍스트로만 작성하세요. 각 항목은 2문장 이내로 간결하게 쓰고, 전체 응답은 500자를 넘기지 마세요. 한국어로, 반드시 (3) 종합 권고안까지 완결된 문장으로 마무리하세요.";
+    const modText = await callAgent(modSystem, history.join('\n\n') + '\n\n---\n위 회의 내용을 종합 정리하세요.', 2000);
     modDiv.innerHTML = `<span class="who mod">사회자 종합</span><p>${escapeHtml(modText)}</p><span class="stamp">회의 종료</span>`;
+    moderatorSummary = modText;
     document.getElementById('meta').textContent = '종료';
+    document.getElementById('exportBtn').disabled = false;
 
   }catch(err){
     appendEntry('risk','오류','', false);
@@ -232,6 +255,35 @@ async function startMeeting(){
   }finally{
     btn.disabled = false; btn.textContent = '회의 시작';
   }
+}
+
+function exportTranscript(){
+  if(!history.length) return;
+  const now = new Date();
+  const ts = now.toISOString().slice(0,16).replace('T',' ');
+  const lines = [];
+  lines.push('AI 자문위원회 회의록');
+  lines.push(`일시: ${ts}`);
+  lines.push(`라운드: ${currentRounds}라운드`);
+  lines.push(`안건: ${currentAgenda}`);
+  lines.push('='.repeat(40));
+  lines.push('');
+  history.slice(1).forEach(line => { lines.push(line); lines.push(''); });
+  if(moderatorSummary){
+    lines.push('-'.repeat(40));
+    lines.push('[사회자 종합]');
+    lines.push(moderatorSummary);
+  }
+  const blob = new Blob([lines.join('\n')], {type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const safeAgenda = currentAgenda.slice(0,20).replace(/[\\/:*?"<>|]/g,'');
+  a.href = url;
+  a.download = `회의록_${safeAgenda}_${now.toISOString().slice(0,10)}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 </script>
 </body>
