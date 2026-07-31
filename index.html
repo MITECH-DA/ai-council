@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>AI 자문위원회 회의</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1E2733; --navy2:#293544; --paper:#FAF7F0; --ink:#2A2823;
+    --biz:#B0742C; --biz-bg:#FBF0DF; --biz-tx:#7A4E15;
+    --fin:#166F5C; --fin-bg:#E3F3EE; --fin-tx:#0F4E40;
+    --law:#2C5C93; --law-bg:#E6EFF9; --law-tx:#1E4370;
+    --risk:#B03A2E; --risk-bg:#FBEBE8; --risk-tx:#7E2A21;
+    --mod:#5B4A8A; --mod-bg:#EFEBF7; --mod-tx:#40315F;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--navy);font-family:'Noto Sans KR',sans-serif;color:#EDEAE1;padding:0;}
+  .wrap{max-width:760px;margin:0 auto;padding:32px 20px 60px;}
+  .title{font-family:'Noto Serif KR',serif;font-weight:700;font-size:24px;color:#F4F1E8;margin:0 0 4px;}
+  .subtitle{font-size:13px;color:#9BA3AF;margin:0 0 28px;}
+  .panel{background:var(--navy2);border:1px solid #3A4453;border-radius:10px;padding:20px;margin-bottom:20px;}
+  label{display:block;font-size:12px;color:#9BA3AF;margin-bottom:6px;}
+  textarea{width:100%;min-height:64px;background:#151C25;border:1px solid #3A4453;border-radius:6px;color:#F4F1E8;padding:10px 12px;font-size:14px;font-family:inherit;resize:vertical;}
+  textarea:focus{outline:1px solid #6B7B93;}
+  .row{display:flex;gap:12px;margin-top:14px;align-items:flex-end;}
+  select{background:#151C25;border:1px solid #3A4453;color:#F4F1E8;padding:8px 10px;border-radius:6px;font-size:13px;}
+  button{background:#E8A64B;color:#241704;border:none;border-radius:6px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;}
+  button:disabled{background:#5A5346;color:#9B9385;cursor:not-allowed;}
+  button:hover:not(:disabled){background:#F0B563;}
+
+  .seats{display:flex;gap:10px;margin-bottom:20px;}
+  .seat{flex:1;background:var(--navy2);border:1px solid #3A4453;border-radius:8px;padding:12px 8px;text-align:center;font-size:12px;color:#9BA3AF;transition:all .25s;}
+  .seat .role{font-weight:700;font-size:13px;display:block;margin-bottom:2px;color:#EDEAE1;}
+  .seat.active{border-color:currentColor;box-shadow:0 0 0 1px currentColor inset;}
+  .seat.biz.active{color:var(--biz);} .seat.fin.active{color:var(--fin);}
+  .seat.law.active{color:var(--law);} .seat.risk.active{color:var(--risk);}
+  .seat .status{display:block;margin-top:4px;font-size:11px;}
+
+  .minutes{background:var(--paper);border-radius:10px;padding:24px 26px;color:var(--ink);min-height:80px;}
+  .minutes-head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:16px;}
+  .minutes-head h2{font-family:'Noto Serif KR',serif;font-size:17px;margin:0;}
+  .minutes-head span{font-size:11px;color:#6B675B;}
+  .empty{font-size:13px;color:#8A8579;font-style:normal;}
+  .entry{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid #E3DFD3;}
+  .entry:last-child{border-bottom:none;}
+  .entry .who{font-size:12px;font-weight:700;padding:2px 8px;border-radius:4px;display:inline-block;margin-bottom:6px;}
+  .who.biz{background:var(--biz-bg);color:var(--biz-tx);}
+  .who.fin{background:var(--fin-bg);color:var(--fin-tx);}
+  .who.law{background:var(--law-bg);color:var(--law-tx);}
+  .who.risk{background:var(--risk-bg);color:var(--risk-tx);}
+  .who.mod{background:var(--mod-bg);color:var(--mod-tx);}
+  .entry p{font-size:14px;line-height:1.65;margin:0;white-space:pre-wrap;}
+  .typing{font-size:13px;color:#8A8579;}
+  .typing::after{content:'●●●';letter-spacing:2px;animation:blink 1.2s infinite;}
+  @keyframes blink{0%,100%{opacity:.2}50%{opacity:1}}
+
+  .stamp{display:inline-block;border:2px solid var(--risk);color:var(--risk);font-weight:700;font-size:13px;padding:5px 12px;border-radius:4px;transform:rotate(-4deg);margin-top:10px;font-family:'Noto Serif KR',serif;}
+  .err{color:#F3B3AC;font-size:13px;margin-top:10px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="title">AI 자문위원회</p>
+  <p class="subtitle">사업가 · 재무전문가 · 법무사 · 리스크매니저 4인 순차 토론 데모</p>
+
+  <div class="panel">
+    <label for="agenda">회의 안건</label>
+    <textarea id="agenda" placeholder="예: 신규 해외 유통사와 총판 계약 체결 여부를 검토한다"></textarea>
+    <div class="row">
+      <div>
+        <label for="rounds">라운드 수</label>
+        <select id="rounds">
+          <option value="1">1라운드 (4턴)</option>
+          <option value="2" selected>2라운드 (8턴)</option>
+          <option value="3">3라운드 (12턴)</option>
+        </select>
+      </div>
+      <button id="startBtn" onclick="startMeeting()">회의 시작</button>
+    </div>
+  </div>
+
+  <div class="seats">
+    <div class="seat biz" id="seat-biz"><span class="role">사업가</span>성장·기회<span class="status" id="status-biz">대기</span></div>
+    <div class="seat fin" id="seat-fin"><span class="role">재무전문가</span>수익·비용<span class="status" id="status-fin">대기</span></div>
+    <div class="seat law" id="seat-law"><span class="role">법무사</span>규제·계약<span class="status" id="status-law">대기</span></div>
+    <div class="seat risk" id="seat-risk"><span class="role">리스크매니저</span>위험·대응<span class="status" id="status-risk">대기</span></div>
+  </div>
+
+  <div class="minutes">
+    <div class="minutes-head">
+      <h2>회의록</h2>
+      <span id="meta">대기중</span>
+    </div>
+    <div id="log"><p class="empty">안건을 입력하고 회의를 시작하세요.</p></div>
+  </div>
+</div>
+
+<script>
+const ROLES = {
+  biz: {
+    label: "사업가", cls: "biz",
+    system: "당신은 스타트업 대표 출신의 사업가입니다. 시장 기회, 매출 성장, 경쟁 우위, 실행 속도 관점에서만 발언합니다. 재무 리스크나 법적 세부사항은 다른 사람 몫이라 생각하고 언급을 최소화합니다. 회의에서 다른 참석자의 직전 발언에 짧게 반응한 뒤 본인 의견을 말하세요. 3~4문장, 한국어, 실무 화법으로 답하세요."
+  },
+  fin: {
+    label: "재무전문가", cls: "fin",
+    system: "당신은 20년 경력의 재무 전문가(CFO 출신)입니다. ROI, 현금흐름, 손익분기점, 기회비용 관점에서만 발언합니다. 숫자나 구체적 재무 논리를 최소 1개 언급하세요(가정치라도 명시). 회의에서 다른 참석자의 직전 발언에 짧게 반응한 뒤 본인 의견을 말하세요. 3~4문장, 한국어, 보수적이고 신중한 화법으로 답하세요."
+  },
+  law: {
+    label: "법무사", cls: "law",
+    system: "당신은 규제 대응 전문 법무사입니다. 계약 리스크, 인허가/컴플라이언스, 책임소재 관점에서만 발언합니다. 의료기기·수출 등 규제산업이 언급되면 관련 인허가 이슈를 짚으세요. 회의에서 다른 참석자의 직전 발언에 짧게 반응한 뒤 본인 의견을 말하세요. 3~4문장, 한국어, 신중하고 절제된 화법으로 답하세요."
+  },
+  risk: {
+    label: "리스크매니저", cls: "risk",
+    system: "당신은 리스크관리 담당 임원입니다. 실패 시나리오, 운영 리스크, 컨틴전시 플랜 관점에서만 발언합니다. 항상 '만약 ~라면' 형태로 최악의 시나리오 하나를 구체적으로 짚으세요. 회의에서 다른 참석자의 직전 발언에 짧게 반응한 뒤 본인 의견을 말하세요. 3~4문장, 한국어, 냉정한 화법으로 답하세요."
+  }
+};
+const ORDER = ["biz","fin","law","risk"];
+let history = [];
+
+function escapeHtml(s){
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function setSeat(key, status, active){
+  document.querySelectorAll('.seat').forEach(s=>s.classList.remove('active'));
+  if(active){
+    document.getElementById('seat-'+key).classList.add('active');
+  }
+  ['biz','fin','law','risk'].forEach(k=>{
+    document.getElementById('status-'+k).textContent = (k===key) ? status : (k===key?status:document.getElementById('status-'+k).textContent);
+  });
+}
+
+function resetSeats(){
+  ['biz','fin','law','risk'].forEach(k=>{
+    document.getElementById('status-'+k).textContent = '대기';
+    document.getElementById('seat-'+k).classList.remove('active');
+  });
+}
+
+async function callAgent(system, transcriptText, maxTokens){
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      model: "claude-sonnet-4-6",
+      max_tokens: maxTokens || 700,
+      system: system,
+      messages: [{role:"user", content: transcriptText}]
+    })
+  });
+  const data = await res.json();
+  if(data.content && data.content.length){
+    return data.content.map(b=>b.text||"").join("").trim();
+  }
+  throw new Error("empty response");
+}
+
+function appendEntry(cls, label, text, isTyping){
+  const log = document.getElementById('log');
+  if(log.querySelector('.empty')) log.innerHTML = '';
+  const div = document.createElement('div');
+  div.className = 'entry';
+  div.id = isTyping ? 'typing-entry' : '';
+  div.innerHTML = `<span class="who ${cls}">${label}</span><p>${isTyping ? '<span class="typing">발언 준비중</span>' : escapeHtml(text)}</p>`;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+  return div;
+}
+
+async function startMeeting(){
+  const agenda = document.getElementById('agenda').value.trim();
+  if(!agenda){ alert('안건을 입력해 주세요.'); return; }
+  const rounds = parseInt(document.getElementById('rounds').value, 10);
+  const btn = document.getElementById('startBtn');
+  btn.disabled = true; btn.textContent = '진행중...';
+  document.getElementById('log').innerHTML = '';
+  document.getElementById('meta').textContent = '진행중';
+  history = [`[안건] ${agenda}`];
+
+  try{
+    for(let r=1; r<=rounds; r++){
+      for(const key of ORDER){
+        const role = ROLES[key];
+        setSeat(key, '발언중', true);
+        const entryDiv = appendEntry(role.cls, `${role.label} · ${r}라운드`, '', true);
+        const transcript = history.join('\n\n') + `\n\n---\n지금까지의 회의 내용을 참고하여 ${r}라운드 발언을 하세요. 반드시 완결된 문장으로 끝내세요.`;
+        const text = await callAgent(role.system, transcript, 700);
+        entryDiv.innerHTML = `<span class="who ${role.cls}">${role.label} · ${r}라운드</span><p>${escapeHtml(text)}</p>`;
+        history.push(`[${role.label}] ${text}`);
+        setSeat(key, '완료', false);
+      }
+    }
+
+    resetSeats();
+    document.getElementById('meta').textContent = '요약 작성중';
+    const modDiv = appendEntry('mod', '사회자 종합', '', true);
+    const modSystem = "당신은 회의 사회자입니다. 지금까지 4명(사업가/재무전문가/법무사/리스크매니저)의 발언을 종합해 (1) 각 역할의 핵심 입장 한 줄씩, (2) 의견이 갈리는 지점, (3) 사회자로서의 종합 권고안 순서로 정리하세요. 한국어, 항목별 줄바꿈. 각 항목은 간결하게 쓰되, 반드시 (3) 종합 권고안까지 완결된 문장으로 마무리하세요.";
+    const modText = await callAgent(modSystem, history.join('\n\n') + '\n\n---\n위 회의 내용을 종합 정리하세요.', 1200);
+    modDiv.innerHTML = `<span class="who mod">사회자 종합</span><p>${escapeHtml(modText)}</p><span class="stamp">회의 종료</span>`;
+    document.getElementById('meta').textContent = '종료';
+
+  }catch(err){
+    appendEntry('risk','오류','', false);
+    document.getElementById('log').lastChild.querySelector('p').innerHTML = '<span class="err">API 호출 중 오류가 발생했습니다: '+escapeHtml(err.message||String(err))+'</span>';
+  }finally{
+    btn.disabled = false; btn.textContent = '회의 시작';
+  }
+}
+</script>
+</body>
+</html>
