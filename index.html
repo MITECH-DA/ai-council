@@ -9,14 +9,18 @@
   :root{
     --navy:#1E2733; --navy2:#293544; --paper:#FAF7F0; --ink:#2A2823;
     --biz:#B0742C; --biz-bg:#FBF0DF; --biz-tx:#7A4E15;
+    --strat:#4A4A9E; --strat-bg:#ECEBF8; --strat-tx:#34346F;
+    --pe:#9C3565; --pe-bg:#FAE9F0; --pe-tx:#6E2547;
     --fin:#166F5C; --fin-bg:#E3F3EE; --fin-tx:#0F4E40;
     --law:#2C5C93; --law-bg:#E6EFF9; --law-tx:#1E4370;
+    --oi:#4C7A2E; --oi-bg:#EEF5E7; --oi-tx:#365821;
+    --net:#1E7A8C; --net-bg:#E5F3F5; --net-tx:#155763;
     --risk:#B03A2E; --risk-bg:#FBEBE8; --risk-tx:#7E2A21;
     --mod:#5B4A8A; --mod-bg:#EFEBF7; --mod-tx:#40315F;
   }
   *{box-sizing:border-box;}
   body{margin:0;background:var(--navy);font-family:'Noto Sans KR',sans-serif;color:#EDEAE1;padding:0;}
-  .wrap{max-width:760px;margin:0 auto;padding:32px 20px 60px;}
+  .wrap{max-width:820px;margin:0 auto;padding:32px 20px 60px;}
   .title{font-family:'Noto Serif KR',serif;font-weight:700;font-size:24px;color:#F4F1E8;margin:0 0 4px;}
   .subtitle{font-size:13px;color:#9BA3AF;margin:0 0 28px;}
   .panel{background:var(--navy2);border:1px solid #3A4453;border-radius:10px;padding:20px;margin-bottom:20px;}
@@ -29,13 +33,19 @@
   button:disabled{background:#5A5346;color:#9B9385;cursor:not-allowed;}
   button:hover:not(:disabled){background:#F0B563;}
 
-  .seats{display:flex;gap:10px;margin-bottom:20px;}
-  .seat{flex:1;background:var(--navy2);border:1px solid #3A4453;border-radius:8px;padding:12px 8px;text-align:center;font-size:12px;color:#9BA3AF;transition:all .25s;}
-  .seat .role{font-weight:700;font-size:13px;display:block;margin-bottom:2px;color:#EDEAE1;}
+  .seats-title{font-size:12px;color:#9BA3AF;margin:0 0 10px;}
+  .seats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+  .seat{background:var(--navy2);border:1px solid #3A4453;border-radius:8px;padding:10px 6px 8px;text-align:center;font-size:11px;color:#9BA3AF;transition:all .25s;position:relative;}
+  .seat.off{opacity:.4;}
+  .seat .role{font-weight:700;font-size:12px;display:block;margin-bottom:2px;color:#EDEAE1;}
   .seat.active{border-color:currentColor;box-shadow:0 0 0 1px currentColor inset;}
   .seat.biz.active{color:var(--biz);} .seat.fin.active{color:var(--fin);}
   .seat.law.active{color:var(--law);} .seat.risk.active{color:var(--risk);}
-  .seat .status{display:block;margin-top:4px;font-size:11px;}
+  .seat.strat.active{color:var(--strat);} .seat.pe.active{color:var(--pe);}
+  .seat.oi.active{color:var(--oi);} .seat.net.active{color:var(--net);}
+  .seat .status{display:block;margin-top:3px;font-size:10px;}
+  .seat .chk{margin-top:6px;}
+  .seat .chk input{cursor:pointer;}
 
   .minutes{background:var(--paper);border-radius:10px;padding:24px 26px;color:var(--ink);min-height:80px;}
   .minutes-head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:16px;}
@@ -49,6 +59,10 @@
   .who.fin{background:var(--fin-bg);color:var(--fin-tx);}
   .who.law{background:var(--law-bg);color:var(--law-tx);}
   .who.risk{background:var(--risk-bg);color:var(--risk-tx);}
+  .who.strat{background:var(--strat-bg);color:var(--strat-tx);}
+  .who.pe{background:var(--pe-bg);color:var(--pe-tx);}
+  .who.oi{background:var(--oi-bg);color:var(--oi-tx);}
+  .who.net{background:var(--net-bg);color:var(--net-tx);}
   .who.mod{background:var(--mod-bg);color:var(--mod-tx);}
   .entry p{font-size:14px;line-height:1.65;margin:0;white-space:pre-wrap;}
   .typing{font-size:13px;color:#8A8579;}
@@ -65,7 +79,7 @@
 <body>
 <div class="wrap">
   <p class="title">AI 자문위원회</p>
-  <p class="subtitle">사업가 · 재무전문가 · 법무사 · 리스크매니저 4인 순차 토론 데모</p>
+  <p class="subtitle">참석자를 선택하고 안건을 입력하면 순서대로 토론합니다</p>
 
   <div class="panel">
     <label for="apiKey">Claude API 키</label>
@@ -80,21 +94,17 @@
       <div>
         <label for="rounds">라운드 수</label>
         <select id="rounds">
-          <option value="1">1라운드 (4턴)</option>
-          <option value="2" selected>2라운드 (8턴)</option>
-          <option value="3">3라운드 (12턴)</option>
+          <option value="1">1라운드</option>
+          <option value="2" selected>2라운드</option>
+          <option value="3">3라운드</option>
         </select>
       </div>
       <button id="startBtn" onclick="startMeeting()">회의 시작</button>
     </div>
   </div>
 
-  <div class="seats">
-    <div class="seat biz" id="seat-biz"><span class="role">사업가</span>성장·기회<span class="status" id="status-biz">대기</span></div>
-    <div class="seat fin" id="seat-fin"><span class="role">재무전문가</span>수익·비용<span class="status" id="status-fin">대기</span></div>
-    <div class="seat law" id="seat-law"><span class="role">법무사</span>규제·계약<span class="status" id="status-law">대기</span></div>
-    <div class="seat risk" id="seat-risk"><span class="role">리스크매니저</span>위험·대응<span class="status" id="status-risk">대기</span></div>
-  </div>
+  <p class="seats-title">참석자 (체크된 인원만 회의에 참여합니다)</p>
+  <div class="seats" id="seatsGrid"></div>
 
   <div class="minutes">
     <div class="minutes-head">
@@ -104,40 +114,74 @@
         <button id="exportBtn" onclick="exportTranscript()" disabled style="padding:5px 12px;font-size:12px;">텍스트로 내보내기</button>
       </div>
     </div>
-    <div id="log"><p class="empty">안건을 입력하고 회의를 시작하세요.</p></div>
+    <div id="log"><p class="empty">참석자를 선택하고 안건을 입력한 뒤 회의를 시작하세요.</p></div>
   </div>
 </div>
 
 <script>
 const ROLES = {
   biz: {
-    label: "사업가", cls: "biz",
+    label: "사업가", cls: "biz", short:"성장·기회", defaultOn:true,
     system: "당신은 스타트업 대표 출신의 사업가입니다. 시장 기회, 매출 성장, 경쟁 우위, 실행 속도 관점에서만 발언합니다. 재무 리스크나 법적 세부사항은 다른 사람 몫이라 생각하고 언급을 최소화합니다. 회의에서 다른 참석자의 직전 발언에 짧게 반응한 뒤 본인 의견을 말하세요. 마크다운 기호 없이 일반 텍스트로, 3~4문장, 한국어, 실무 화법으로 답하세요."
   },
+  strat: {
+    label: "전략가", cls: "strat", short:"글로벌 전략펌 출신", defaultOn:false,
+    system: "당신은 글로벌 전략컨설팅펌(맥킨지·BCG 유형) 출신 전략가입니다. 시장 규모, 경쟁 구도, 전략적 옵션 비교, 프레임워크 기반 사고방식으로만 발언합니다. 최소 하나의 전략적 대안(예: A안 vs B안)을 구조화해서 제시하세요. 회의에서 다른 참석자의 직전 발언에 짧게 반응한 뒤 본인 의견을 말하세요. 마크다운 기호 없이 일반 텍스트로, 3~4문장, 한국어, 논리적이고 구조화된 화법으로 답하세요."
+  },
+  pe: {
+    label: "사모펀드 M&A 담당", cls: "pe", short:"딜 구조·밸류에이션", defaultOn:false,
+    system: "당신은 사모펀드(PE) M&A 담당 파트너입니다. 밸류에이션, 딜 구조(지분/자산 인수, 마일스톤 페이아웃 등), 시너지, 엑싯 전략 관점에서만 발언합니다. 가능하면 구체적인 딜 구조 대안이나 밸류에이션 논리를 1개 제시하세요. 회의에서 다른 참석자의 직전 발언에 짧게 반응한 뒤 본인 의견을 말하세요. 마크다운 기호 없이 일반 텍스트로, 3~4문장, 한국어, 냉철하고 거래 중심적인 화법으로 답하세요."
+  },
   fin: {
-    label: "재무전문가", cls: "fin",
+    label: "재무전문가", cls: "fin", short:"수익·비용", defaultOn:true,
     system: "당신은 20년 경력의 재무 전문가(CFO 출신)입니다. ROI, 현금흐름, 손익분기점, 기회비용 관점에서만 발언합니다. 숫자나 구체적 재무 논리를 최소 1개 언급하세요(가정치라도 명시). 회의에서 다른 참석자의 직전 발언에 짧게 반응한 뒤 본인 의견을 말하세요. 마크다운 기호 없이 일반 텍스트로, 3~4문장, 한국어, 보수적이고 신중한 화법으로 답하세요."
   },
   law: {
-    label: "법무사", cls: "law",
+    label: "법무사", cls: "law", short:"규제·계약", defaultOn:true,
     system: "당신은 규제 대응 전문 법무사입니다. 계약 리스크, 인허가/컴플라이언스, 책임소재 관점에서만 발언합니다. 의료기기·수출 등 규제산업이 언급되면 관련 인허가 이슈를 짚으세요. 회의에서 다른 참석자의 직전 발언에 짧게 반응한 뒤 본인 의견을 말하세요. 마크다운 기호 없이 일반 텍스트로, 3~4문장, 한국어, 신중하고 절제된 화법으로 답하세요."
   },
+  oi: {
+    label: "오픈이노베이션 담당", cls: "oi", short:"글로벌 협업·제휴", defaultOn:false,
+    system: "당신은 글로벌 오픈이노베이션 담당입니다. 외부 기술 스카우팅, 공동개발/제휴 모델 설계, 협업 생태계 적합성 관점에서만 발언합니다. 협업 방식(라이선싱, 공동개발, 지분투자 등) 중 어느 쪽이 적합한지 구체적으로 짚으세요. 회의에서 다른 참석자의 직전 발언에 짧게 반응한 뒤 본인 의견을 말하세요. 마크다운 기호 없이 일반 텍스트로, 3~4문장, 한국어, 개방적이고 협력 지향적인 화법으로 답하세요."
+  },
+  net: {
+    label: "스타트업 네트워크 전문가", cls: "net", short:"글로벌 생태계·소싱", defaultOn:false,
+    system: "당신은 글로벌 스타트업 네트워크 담당 전문가입니다. 해외 스타트업 생태계 접근성, 잠재 파트너·인수 후보 소싱, 네트워크 레버리지 관점에서만 발언합니다. 가능하면 구체적인 지역·생태계(실리콘밸리, 이스라엘, 유럽 등)를 언급하세요. 회의에서 다른 참석자의 직전 발언에 짧게 반응한 뒤 본인 의견을 말하세요. 마크다운 기호 없이 일반 텍스트로, 3~4문장, 한국어, 네트워킹 중심적인 화법으로 답하세요."
+  },
   risk: {
-    label: "리스크매니저", cls: "risk",
+    label: "리스크매니저", cls: "risk", short:"위험·대응", defaultOn:true,
     system: "당신은 리스크관리 담당 임원입니다. 실패 시나리오, 운영 리스크, 컨틴전시 플랜 관점에서만 발언합니다. 항상 '만약 ~라면' 형태로 최악의 시나리오 하나를 구체적으로 짚으세요. 회의에서 다른 참석자의 직전 발언에 짧게 반응한 뒤 본인 의견을 말하세요. 마크다운 기호 없이 일반 텍스트로, 3~4문장, 한국어, 냉정한 화법으로 답하세요."
   }
 };
-const ORDER = ["biz","fin","law","risk"];
+const FULL_ORDER = ["biz","strat","pe","fin","law","oi","net","risk"];
 let history = [];
 let currentAgenda = '';
 let moderatorSummary = '';
 let currentRounds = 0;
+let activeOrder = [];
 
 const apiKeyInput = document.getElementById('apiKey');
 apiKeyInput.value = localStorage.getItem('claude_api_key') || '';
 apiKeyInput.addEventListener('change', () => {
   localStorage.setItem('claude_api_key', apiKeyInput.value.trim());
 });
+
+function buildSeats(){
+  const grid = document.getElementById('seatsGrid');
+  grid.innerHTML = FULL_ORDER.map(key => {
+    const r = ROLES[key];
+    return `<div class="seat ${r.cls}${r.defaultOn?'':' off'}" id="seat-${key}">
+      <span class="role">${r.label}</span>${r.short}
+      <span class="status" id="status-${key}">대기</span>
+      <label class="chk"><input type="checkbox" id="chk-${key}" ${r.defaultOn?'checked':''} onchange="onSeatToggle('${key}')"></label>
+    </div>`;
+  }).join('');
+}
+function onSeatToggle(key){
+  const on = document.getElementById('chk-'+key).checked;
+  document.getElementById('seat-'+key).classList.toggle('off', !on);
+}
+buildSeats();
 
 function escapeHtml(s){
   return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
@@ -156,13 +200,11 @@ function setSeat(key, status, active){
   if(active){
     document.getElementById('seat-'+key).classList.add('active');
   }
-  ['biz','fin','law','risk'].forEach(k=>{
-    document.getElementById('status-'+k).textContent = (k===key) ? status : (k===key?status:document.getElementById('status-'+k).textContent);
-  });
+  document.getElementById('status-'+key).textContent = status;
 }
 
 function resetSeats(){
-  ['biz','fin','law','risk'].forEach(k=>{
+  FULL_ORDER.forEach(k=>{
     document.getElementById('status-'+k).textContent = '대기';
     document.getElementById('seat-'+k).classList.remove('active');
   });
@@ -202,7 +244,6 @@ function appendEntry(cls, label, text, isTyping){
   if(log.querySelector('.empty')) log.innerHTML = '';
   const div = document.createElement('div');
   div.className = 'entry';
-  div.id = isTyping ? 'typing-entry' : '';
   div.innerHTML = `<span class="who ${cls}">${label}</span><p>${isTyping ? '<span class="typing">발언 준비중</span>' : mdToHtml(text)}</p>`;
   log.appendChild(div);
   log.scrollTop = log.scrollHeight;
@@ -214,6 +255,10 @@ async function startMeeting(){
   if(!agenda){ alert('안건을 입력해 주세요.'); return; }
   localStorage.setItem('claude_api_key', apiKeyInput.value.trim());
   if(!apiKeyInput.value.trim()){ alert('Claude API 키를 입력해 주세요.'); return; }
+
+  activeOrder = FULL_ORDER.filter(key => document.getElementById('chk-'+key).checked);
+  if(activeOrder.length < 2){ alert('참석자를 최소 2명 이상 선택해 주세요.'); return; }
+
   const rounds = parseInt(document.getElementById('rounds').value, 10);
   const btn = document.getElementById('startBtn');
   btn.disabled = true; btn.textContent = '진행중...';
@@ -224,10 +269,11 @@ async function startMeeting(){
   currentAgenda = agenda;
   currentRounds = rounds;
   moderatorSummary = '';
+  resetSeats();
 
   try{
     for(let r=1; r<=rounds; r++){
-      for(const key of ORDER){
+      for(const key of activeOrder){
         const role = ROLES[key];
         setSeat(key, '발언중', true);
         const entryDiv = appendEntry(role.cls, `${role.label} · ${r}라운드`, '', true);
@@ -242,9 +288,10 @@ async function startMeeting(){
     resetSeats();
     document.getElementById('meta').textContent = '요약 작성중';
     const modDiv = appendEntry('mod', '사회자 종합', '', true);
-    const modSystem = "당신은 회의 사회자입니다. 지금까지 4명(사업가/재무전문가/법무사/리스크매니저)의 발언을 종합해 (1) 각 역할의 핵심 입장 한 줄씩, (2) 의견이 갈리는 지점 최대 2가지, (3) 사회자로서의 종합 권고안 순서로 정리하세요. 마크다운 기호(#, **, 번호 매기기)는 쓰지 말고 일반 텍스트로만 작성하세요. 각 항목은 2문장 이내로 간결하게 쓰고, 전체 응답은 500자를 넘기지 마세요. 한국어로, 반드시 (3) 종합 권고안까지 완결된 문장으로 마무리하세요.";
-    const modText = await callAgent(modSystem, history.join('\n\n') + '\n\n---\n위 회의 내용을 종합 정리하세요.', 2000);
-    modDiv.innerHTML = `<span class="who mod">사회자 종합</span><p>${escapeHtml(modText)}</p><span class="stamp">회의 종료</span>`;
+    const roleList = activeOrder.map(k=>ROLES[k].label).join('/');
+    const modSystem = `당신은 회의 사회자입니다. 지금까지 참석한 ${activeOrder.length}명(${roleList})의 발언을 종합해 (1) 각 참석자의 핵심 입장 한 줄씩, (2) 의견이 갈리는 지점 최대 2가지, (3) 사회자로서의 종합 권고안 순서로 정리하세요. 마크다운 기호(#, **, 번호 매기기)는 쓰지 말고 일반 텍스트로만 작성하세요. 각 항목은 2문장 이내로 간결하게 쓰고, 전체 응답은 참석 인원 수에 비례해 늘려도 되지만 항목당 분량은 넘기지 마세요. 한국어로, 반드시 (3) 종합 권고안까지 완결된 문장으로 마무리하세요.`;
+    const modText = await callAgent(modSystem, history.join('\n\n') + '\n\n---\n위 회의 내용을 종합 정리하세요.', 2200);
+    modDiv.innerHTML = `<span class="who mod">사회자 종합</span><p>${mdToHtml(modText)}</p><span class="stamp">회의 종료</span>`;
     moderatorSummary = modText;
     document.getElementById('meta').textContent = '종료';
     document.getElementById('exportBtn').disabled = false;
@@ -265,6 +312,7 @@ function exportTranscript(){
   lines.push('AI 자문위원회 회의록');
   lines.push(`일시: ${ts}`);
   lines.push(`라운드: ${currentRounds}라운드`);
+  lines.push(`참석자: ${activeOrder.map(k=>ROLES[k].label).join(', ')}`);
   lines.push(`안건: ${currentAgenda}`);
   lines.push('='.repeat(40));
   lines.push('');
