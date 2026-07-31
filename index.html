@@ -65,6 +65,12 @@
   <p class="subtitle">사업가 · 재무전문가 · 법무사 · 리스크매니저 4인 순차 토론 데모</p>
 
   <div class="panel">
+    <label for="apiKey">Claude API 키</label>
+    <input type="password" id="apiKey" placeholder="sk-ant-..." style="width:100%;background:#151C25;border:1px solid #3A4453;border-radius:6px;color:#F4F1E8;padding:9px 12px;font-size:13px;font-family:inherit;">
+    <p style="font-size:11px;color:#9BA3AF;margin:6px 0 0;">이 브라우저의 localStorage에만 저장됩니다. 공용 컴퓨터나 공개 URL에서는 입력하지 마세요.</p>
+  </div>
+
+  <div class="panel">
     <label for="agenda">회의 안건</label>
     <textarea id="agenda" placeholder="예: 신규 해외 유통사와 총판 계약 체결 여부를 검토한다"></textarea>
     <div class="row">
@@ -118,6 +124,12 @@ const ROLES = {
 const ORDER = ["biz","fin","law","risk"];
 let history = [];
 
+const apiKeyInput = document.getElementById('apiKey');
+apiKeyInput.value = localStorage.getItem('claude_api_key') || '';
+apiKeyInput.addEventListener('change', () => {
+  localStorage.setItem('claude_api_key', apiKeyInput.value.trim());
+});
+
 function escapeHtml(s){
   return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 }
@@ -140,9 +152,16 @@ function resetSeats(){
 }
 
 async function callAgent(system, transcriptText, maxTokens){
+  const apiKey = localStorage.getItem('claude_api_key') || '';
+  if(!apiKey){ throw new Error('API 키를 먼저 입력해 주세요.'); }
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
-    headers: {"Content-Type":"application/json"},
+    headers: {
+      "Content-Type":"application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true"
+    },
     body: JSON.stringify({
       model: "claude-sonnet-4-6",
       max_tokens: maxTokens || 700,
@@ -150,6 +169,10 @@ async function callAgent(system, transcriptText, maxTokens){
       messages: [{role:"user", content: transcriptText}]
     })
   });
+  if(!res.ok){
+    const errBody = await res.text();
+    throw new Error(`API 오류 (${res.status}): ${errBody.slice(0,200)}`);
+  }
   const data = await res.json();
   if(data.content && data.content.length){
     return data.content.map(b=>b.text||"").join("").trim();
@@ -172,6 +195,8 @@ function appendEntry(cls, label, text, isTyping){
 async function startMeeting(){
   const agenda = document.getElementById('agenda').value.trim();
   if(!agenda){ alert('안건을 입력해 주세요.'); return; }
+  localStorage.setItem('claude_api_key', apiKeyInput.value.trim());
+  if(!apiKeyInput.value.trim()){ alert('Claude API 키를 입력해 주세요.'); return; }
   const rounds = parseInt(document.getElementById('rounds').value, 10);
   const btn = document.getElementById('startBtn');
   btn.disabled = true; btn.textContent = '진행중...';
