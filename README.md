@@ -17,7 +17,7 @@
 
 ## 최초 접속
 
-1. 페이지 접속
+1. 페이지 접속 (https://mitech-da.github.io/ai-council)
 2. 상단 "Claude API 키" 입력창에 키 붙여넣기
    - 다른 브라우저나 기기에서는 재입력 필요
 
