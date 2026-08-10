@@ -78,6 +78,7 @@
   #exportBtn:disabled{border-color:#C9C4B5;color:#B0AB9C;background:transparent;}
   #exportBtn:hover:not(:disabled){background:var(--ink);color:var(--paper);}
   #fileInput{color:#EDEAE1;font-size:12px;}
+  input[type=range]{accent-color:#E8A64B;}
 </style>
 </head>
 <body>
@@ -96,12 +97,8 @@
     <textarea id="agenda" placeholder="예: 신규 해외 유통사와 총판 계약 체결 여부를 검토한다"></textarea>
     <div class="row">
       <div>
-        <label for="rounds">발언 강도</label>
-        <select id="rounds">
-          <option value="1">짧게 (참석자당 평균 1회)</option>
-          <option value="2" selected>보통 (참석자당 평균 2회)</option>
-          <option value="3">깊게 (참석자당 평균 3회)</option>
-        </select>
+        <label for="rounds">발언 강도: 참석자당 평균 <span id="roundsVal">2</span>회 (총 <span id="totalTurnsHint">-</span>턴)</label>
+        <input type="range" id="rounds" min="1" max="10" value="2" step="1" style="width:220px;" oninput="updateRoundsLabel()">
       </div>
       <button id="startBtn" onclick="startMeeting()">회의 시작</button>
     </div>
@@ -190,11 +187,20 @@ function buildSeats(){
     </div>`;
   }).join('');
 }
+function updateRoundsLabel(){
+  const val = document.getElementById('rounds').value;
+  document.getElementById('roundsVal').textContent = val;
+  const activeCount = FULL_ORDER.filter(k => document.getElementById('chk-'+k) && document.getElementById('chk-'+k).checked).length;
+  document.getElementById('totalTurnsHint').textContent = activeCount > 0 ? (val * activeCount) : '-';
+}
+
 function onSeatToggle(key){
   const on = document.getElementById('chk-'+key).checked;
   document.getElementById('seat-'+key).classList.toggle('off', !on);
+  updateRoundsLabel();
 }
 buildSeats();
+updateRoundsLabel();
 
 let attachments = [];
 
@@ -425,6 +431,7 @@ async function startMeeting(){
   try{
     let lastIssue = '';
     let lastSpeaker = null;
+    const speakerHistory = [];
     const spoken = {};
     activeOrder.forEach(k => spoken[k] = 0);
     const totalTurns = rounds * activeOrder.length;
@@ -433,7 +440,16 @@ async function startMeeting(){
     for(let t=1; t<=totalTurns; t++){
       const unspoken = activeOrder.filter(k => spoken[k] === 0);
       const remaining = totalTurns - t + 1;
-      let candidates = (unspoken.length > 0 && unspoken.length >= remaining) ? unspoken : activeOrder;
+      let candidates;
+      if(unspoken.length > 0 && unspoken.length >= remaining){
+        candidates = unspoken; // 막판에는 아직 발언 안 한 사람만 선택 가능
+      }else{
+        const minSpoken = Math.min(...activeOrder.map(k => spoken[k]));
+        const fairPool = activeOrder.filter(k => spoken[k] <= minSpoken + 1); // 발언 횟수 균형 유지
+        const recentSet = new Set(speakerHistory.slice(-2)); // 최근 2명 제외해서 핑퐁 방지
+        const noRecent = fairPool.filter(k => !recentSet.has(k));
+        candidates = noRecent.length > 0 ? noRecent : fairPool;
+      }
       if(candidates.length > 1 && lastSpeaker){
         const filtered = candidates.filter(k => k !== lastSpeaker);
         if(filtered.length > 0) candidates = filtered;
@@ -451,6 +467,7 @@ async function startMeeting(){
       history.push(`[${role.label}] ${text}`);
       spoken[nextKey]++;
       lastSpeaker = nextKey;
+      speakerHistory.push(nextKey);
       setSeat(nextKey, '완료', false);
 
       if(t % issueEvery === 0 && t < totalTurns){
