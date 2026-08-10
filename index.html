@@ -96,11 +96,11 @@
     <textarea id="agenda" placeholder="예: 신규 해외 유통사와 총판 계약 체결 여부를 검토한다"></textarea>
     <div class="row">
       <div>
-        <label for="rounds">라운드 수</label>
+        <label for="rounds">발언 강도</label>
         <select id="rounds">
-          <option value="1">1라운드</option>
-          <option value="2" selected>2라운드</option>
-          <option value="3">3라운드</option>
+          <option value="1">짧게 (참석자당 평균 1회)</option>
+          <option value="2" selected>보통 (참석자당 평균 2회)</option>
+          <option value="3">깊게 (참석자당 평균 3회)</option>
         </select>
       </div>
       <button id="startBtn" onclick="startMeeting()">회의 시작</button>
@@ -382,6 +382,21 @@ function appendEntry(cls, label, text, isTyping){
   return div;
 }
 
+async function pickNextSpeaker(candidateKeys, historyArr, mediaBlocks){
+  const roster = candidateKeys.map(k => `${k}: ${ROLES[k].label} (${ROLES[k].short})`).join('\n');
+  const dispatchSystem = `당신은 회의 진행자입니다. 아래 후보자 목록 중, 지금까지의 회의 흐름과 가장 최근 발언 내용에 가장 적합하게 답하거나 반박할 수 있는 사람 한 명을 고르세요. 반드시 후보자 코드(콜론 왼쪽 영문)만 정확히 한 단어로 출력하세요. 설명이나 다른 텍스트는 절대 쓰지 마세요.\n\n후보자 목록:\n${roster}`;
+  try{
+    const text = await callAgent(dispatchSystem, historyArr.join('\n\n') + '\n\n---\n다음 발언자로 가장 적합한 사람의 코드만 출력하세요.', 20, null, 0.3);
+    const cleaned = text.trim().toLowerCase().replace(/[^a-z]/g, '');
+    if(candidateKeys.includes(cleaned)) return cleaned;
+    const found = candidateKeys.find(k => cleaned.includes(k) || k.includes(cleaned));
+    if(found) return found;
+  }catch(e){
+    // 디스패처 실패 시 후보 중 무작위 선택으로 폴백
+  }
+  return candidateKeys[Math.floor(Math.random() * candidateKeys.length)];
+}
+
 async function startMeeting(){
   const agenda = document.getElementById('agenda').value.trim();
   if(!agenda){ alert('안건을 입력해 주세요.'); return; }
@@ -409,27 +424,43 @@ async function startMeeting(){
 
   try{
     let lastIssue = '';
-    for(let r=1; r<=rounds; r++){
-      for(const key of activeOrder){
-        const role = ROLES[key];
-        setSeat(key, '발언중', true);
-        const entryDiv = appendEntry(role.cls, `${role.label} · ${r}라운드`, '', true);
-        const issueLine = lastIssue ? `\n\n[사회자가 짚은 쟁점] ${lastIssue}\n위 쟁점에 대한 당신의 입장을 우선적으로 다루세요.` : '';
-        const transcript = history.join('\n\n') + issueLine + `\n\n---\n지금까지의 회의 내용을 참고하여 ${r}라운드 발언을 하세요. 첨부된 이미지나 문서가 있다면 그 내용을 근거로 활용하세요. 반드시 완결된 문장으로 끝내세요.`;
-        const text = await callAgent(role.system + ' ' + COMMON_RULES, transcript, 800, mediaBlocks, 0.5);
-        entryDiv.innerHTML = `<span class="who ${role.cls}">${role.label} · ${r}라운드</span><p>${mdToHtml(text)}</p>`;
-        history.push(`[${role.label}] ${text}`);
-        setSeat(key, '완료', false);
+    let lastSpeaker = null;
+    const spoken = {};
+    activeOrder.forEach(k => spoken[k] = 0);
+    const totalTurns = rounds * activeOrder.length;
+    const issueEvery = activeOrder.length; // 참석자 수 한 바퀴마다 쟁점 정리
+
+    for(let t=1; t<=totalTurns; t++){
+      const unspoken = activeOrder.filter(k => spoken[k] === 0);
+      const remaining = totalTurns - t + 1;
+      let candidates = (unspoken.length > 0 && unspoken.length >= remaining) ? unspoken : activeOrder;
+      if(candidates.length > 1 && lastSpeaker){
+        const filtered = candidates.filter(k => k !== lastSpeaker);
+        if(filtered.length > 0) candidates = filtered;
       }
 
-      if(r < rounds){
+      const nextKey = candidates.length === 1 ? candidates[0] : await pickNextSpeaker(candidates, history, mediaBlocks);
+      const role = ROLES[nextKey];
+
+      setSeat(nextKey, '발언중', true);
+      const entryDiv = appendEntry(role.cls, `${role.label} · ${t}번째 발언`, '', true);
+      const issueLine = lastIssue ? `\n\n[사회자가 짚은 쟁점] ${lastIssue}\n위 쟁점에 대한 당신의 입장을 우선적으로 다루세요.` : '';
+      const transcript = history.join('\n\n') + issueLine + `\n\n---\n지금까지의 회의 내용을 참고하여 발언하세요. 첨부된 이미지나 문서가 있다면 그 내용을 근거로 활용하세요. 반드시 완결된 문장으로 끝내세요.`;
+      const text = await callAgent(role.system + ' ' + COMMON_RULES, transcript, 800, mediaBlocks, 0.5);
+      entryDiv.innerHTML = `<span class="who ${role.cls}">${role.label} · ${t}번째 발언</span><p>${mdToHtml(text)}</p>`;
+      history.push(`[${role.label}] ${text}`);
+      spoken[nextKey]++;
+      lastSpeaker = nextKey;
+      setSeat(nextKey, '완료', false);
+
+      if(t % issueEvery === 0 && t < totalTurns){
         resetSeats();
         document.getElementById('meta').textContent = '쟁점 정리중';
-        const issueDiv = appendEntry('mod', `사회자 · ${r}라운드 쟁점 포착`, '', true);
+        const issueDiv = appendEntry('mod', '사회자 · 쟁점 포착', '', true);
         const issueSystem = "당신은 회의 사회자입니다. 지금까지 나온 발언들 중 참석자들 사이에 가장 첨예하게 의견이 갈리는 쟁점 하나를 골라, 어느 참석자와 어느 참석자가 왜 부딪히는지 구체적으로 짚어 1~2문장으로 요약하세요. 마크다운 기호 없이 일반 텍스트로, 한국어로 답하세요.";
         const issueText = await callAgent(issueSystem, history.join('\n\n') + '\n\n---\n지금까지 회의에서 가장 의견이 갈리는 쟁점을 짚어주세요.', 300, mediaBlocks, 0.4);
-        issueDiv.innerHTML = `<span class="who mod">사회자 · ${r}라운드 쟁점 포착</span><p>${mdToHtml(issueText)}</p>`;
-        history.push(`[사회자 - ${r}라운드 쟁점] ${issueText}`);
+        issueDiv.innerHTML = `<span class="who mod">사회자 · 쟁점 포착</span><p>${mdToHtml(issueText)}</p>`;
+        history.push(`[사회자 - 쟁점] ${issueText}`);
         lastIssue = issueText;
         document.getElementById('meta').textContent = '진행중';
       }
@@ -461,7 +492,7 @@ function exportTranscript(){
   const lines = [];
   lines.push('AI 자문위원회 회의록');
   lines.push(`일시: ${ts}`);
-  lines.push(`라운드: ${currentRounds}라운드`);
+  lines.push(`발언 강도: 참석자당 평균 ${currentRounds}회`);
   lines.push(`참석자: ${activeOrder.map(k=>ROLES[k].label).join(', ')}`);
   if(attachments.length){
     lines.push(`첨부파일: ${attachments.map(a=>a.name).join(', ')}`);
