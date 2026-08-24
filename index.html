@@ -57,16 +57,7 @@
   .empty{font-size:13px;color:#8A8579;font-style:normal;}
   .entry{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid #E3DFD3;}
   .entry:last-child{border-bottom:none;}
-  .entry .who{font-size:12px;font-weight:700;padding:2px 8px;border-radius:4px;display:inline-block;margin-bottom:6px;}
-  .who.biz{background:var(--biz-bg);color:var(--biz-tx);}
-  .who.fin{background:var(--fin-bg);color:var(--fin-tx);}
-  .who.law{background:var(--law-bg);color:var(--law-tx);}
-  .who.risk{background:var(--risk-bg);color:var(--risk-tx);}
-  .who.strat{background:var(--strat-bg);color:var(--strat-tx);}
-  .who.pe{background:var(--pe-bg);color:var(--pe-tx);}
-  .who.oi{background:var(--oi-bg);color:var(--oi-tx);}
-  .who.net{background:var(--net-bg);color:var(--net-tx);}
-  .who.mod{background:var(--mod-bg);color:var(--mod-tx);}
+  .who{font-size:12px;font-weight:700;padding:2px 8px;border-radius:4px;display:inline-block;margin-bottom:6px;}
   .entry p{font-size:14px;line-height:1.65;margin:0;white-space:pre-wrap;}
   .typing{font-size:13px;color:#8A8579;}
   .typing::after{content:'●●●';letter-spacing:2px;animation:blink 1.2s infinite;}
@@ -109,6 +100,35 @@
   .philosophy-list{margin:0;padding-left:18px;}
   .philosophy-list li{font-size:13px;line-height:1.75;margin-bottom:8px;font-style:italic;color:#4A4536;}
   .sample-quote{background:#F0ECDF;border-left:3px solid var(--ink);padding:12px 16px;font-size:13px;line-height:1.7;border-radius:0 6px 6px 0;color:#3A3628;}
+
+  .resume-body-view{white-space:pre-wrap;font-size:13px;line-height:1.75;color:#4A4536;background:#F7F4EA;border-radius:8px;padding:16px;}
+  .resume-textarea{width:100%;min-height:360px;font-family:'Noto Sans KR',sans-serif;font-size:12.5px;line-height:1.7;padding:14px;border:1px solid #D8D3C4;border-radius:8px;background:#FFFDF7;color:var(--ink);resize:vertical;box-sizing:border-box;}
+  .resume-hint{font-size:11.5px;color:#8A8579;margin:8px 0 0;line-height:1.6;}
+  .resume-actions{display:flex;align-items:center;gap:8px;margin-top:14px;flex-wrap:wrap;}
+  .resume-actions button{font-family:inherit;font-size:12.5px;padding:8px 16px;border-radius:6px;cursor:pointer;border:1px solid transparent;}
+  .btn-primary{background:var(--ink);color:var(--paper);}
+  .btn-primary:hover{opacity:.88;}
+  .btn-secondary{background:transparent;border:1px solid #D8D3C4;color:var(--ink);}
+  .btn-secondary:hover{background:#F0ECDF;}
+  .btn-ghost{background:transparent;border:1px solid transparent;color:#8A8579;text-decoration:underline;}
+  .btn-ghost:hover{color:var(--ink);}
+  .edited-badge{font-size:11px;color:#B5791E;margin-left:4px;}
+
+  .seats-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  .seats-toolbar-btns{display:flex;gap:8px;}
+  .tb-btn{font-family:inherit;font-size:11.5px;padding:6px 12px;border-radius:6px;background:transparent;border:1px solid #3A4453;color:#C9CCD3;cursor:pointer;}
+  .tb-btn:hover{background:#232B38;color:#EDEAE1;}
+
+  .form-field{margin-bottom:14px;}
+  .form-field label{display:block;font-size:12px;font-weight:700;margin-bottom:5px;color:var(--ink);}
+  .form-field .hint{font-size:11px;color:#8A8579;margin:3px 0 0;line-height:1.5;}
+  .form-field input[type=text]{width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #D8D3C4;border-radius:6px;background:#FFFDF7;color:var(--ink);font-family:inherit;font-size:13px;}
+  .form-field textarea{width:100%;box-sizing:border-box;padding:11px;border:1px solid #D8D3C4;border-radius:6px;background:#FFFDF7;color:var(--ink);font-family:inherit;font-size:12.5px;line-height:1.6;resize:vertical;}
+  .form-field.checkbox-row{display:flex;align-items:center;gap:8px;}
+  .form-field.checkbox-row label{margin:0;font-weight:400;font-size:12.5px;}
+  .form-error{font-size:12px;color:#B03A2E;margin:0 0 12px;}
+  .seat-remove{position:absolute;top:4px;right:6px;background:transparent;border:none;color:#6B7280;font-size:12px;cursor:pointer;line-height:1;padding:2px 4px;}
+  .seat-remove:hover{color:#E86A5C;}
 </style>
 </head>
 <body>
@@ -141,8 +161,18 @@
     <p style="font-size:11px;color:#9BA3AF;margin:8px 0 0;">Word·Excel·PowerPoint는 브라우저에서 텍스트만 추출되며(서식 제외), 첨부 내용은 매 발언마다 참석자 전원에게 다시 전달됩니다. 이미지·PDF는 토큰 소모가 크므로 합쳐서 3~4개 이내를 권장합니다.</p>
   </div>
 
-  <p class="seats-title">참석자 (체크된 인원만 회의에 참여합니다)</p>
+  <div class="seats-toolbar">
+    <p class="seats-title">참석자 (체크된 인원만 회의에 참여합니다)</p>
+    <div class="seats-toolbar-btns">
+      <button type="button" class="tb-btn" onclick="openAddPersonaModal()">+ 페르소나 추가</button>
+      <button type="button" class="tb-btn" onclick="backupResumes()">이력서 백업 (txt)</button>
+    </div>
+  </div>
   <div class="seats" id="seatsGrid"></div>
+
+  <div class="modal-overlay" id="addPersonaModal" onclick="closeAddPersonaIfOutside(event)">
+    <div class="modal-card" id="addPersonaCard"></div>
+  </div>
 
   <div class="minutes">
     <div class="minutes-head">
@@ -166,38 +196,100 @@ const COMMON_RULES = "다음 규칙을 반드시 지키세요: (1) 주장에 앞
 const ROLES = {
   biz: {
     label: "사업가", cls: "biz", short:"성장·기회", defaultOn:true,
-    system: "당신은 20년간 대기업 신사업개발본부장·사업부장으로 일하며 신규 채널 매출 비중을 0%에서 18%까지 끌어올리고 담당 사업부 매출을 5년간 78% 성장시킨 사업가형 임원입니다. 신사업 의사결정 소요기간을 4개월에서 6주로 단축시켰고, '경쟁우위는 만드는 것이 아니라 먼저 움직여서 얻는 시간이다'라는 원칙을 갖고 있습니다. 시장 기회 규모 → 매출로의 연결 가능성 → 경쟁 우위의 지속가능성 → 실행 속도, 이 순서로 판단 기준을 고려해 발언합니다. 재무 리스크나 법적 세부사항은 다른 사람 몫이라 생각하고 언급을 최소화합니다. 한국어, 실무 화법으로 답하세요."
+    axis: "시장 기회 규모 → 매출로의 연결 가능성 → 경쟁 우위의 지속가능성 → 실행 속도, 이 순서로 판단 기준을 고려해 발언합니다. 재무 리스크나 법적 세부사항은 다른 사람 몫이라 생각하고 언급을 최소화합니다. 한국어, 실무 화법으로 답하세요."
   },
   strat: {
     label: "전략가", cls: "strat", short:"글로벌 전략펌 출신", defaultOn:false,
-    system: "당신은 19년간 글로벌 전략컨설팅펌 컨설턴트와 대기업 전략기획실장으로 일하며 중장기(5개년) 포트폴리오 전략을 3회 수립하고, 정합성 기준 미달을 이유로 신사업 제안의 60%를 반려시킨 전략가형 임원입니다. 전략적 부적합을 이유로 M&A 딜 5건을 사전에 배제한 경험이 있으며, '할 수 있다고 다 해야 하는 건 아니다, 핵심역량과 멀어지는 성장은 성장이 아니라 분산이다'라는 원칙을 갖고 있습니다. 문제 정의 → 전략적 옵션 도출(최소 2개) → 옵션 간 트레이드오프 비교 → 기존 포트폴리오·핵심역량과의 정합성, 이 순서로 사고해 발언합니다. 최소 하나의 전략적 대안(예: A안 vs B안)을 구조화해서 제시하세요. 한국어, 논리적이고 구조화된 화법으로 답하세요."
+    axis: "문제 정의 → 전략적 옵션 도출(최소 2개) → 옵션 간 트레이드오프 비교 → 기존 포트폴리오·핵심역량과의 정합성, 이 순서로 사고해 발언합니다. 최소 하나의 전략적 대안(예: A안 vs B안)을 구조화해서 제시하세요. 한국어, 논리적이고 구조화된 화법으로 답하세요."
   },
   pe: {
     label: "사모펀드 M&A 담당", cls: "pe", short:"딜 구조·밸류에이션", defaultOn:false,
-    system: "당신은 15년간 사모펀드 파트너와 대기업 PE·M&A본부장으로 일하며 20건 이상, 누적 1조원 이상의 인수 딜을 실행하고 그중 75%가 목표 IRR 18% 이상을 달성한 딜메이커형 임원입니다. 매각 시 장부가 대비 평균 22% 프리미엄을 확보했고, '엑싯 경로가 안 보이는 투자는 투자가 아니라 매몰이다, 들어가기 전에 나가는 길부터 그려야 한다'는 원칙을 갖고 있습니다. 밸류에이션 적정성 → 딜 구조 리스크(지분/자산 인수, 마일스톤 페이아웃 등) → 엑싯 시나리오, 이 순서로 판단 기준을 고려해 발언합니다. 가능하면 구체적인 딜 구조 대안이나 밸류에이션 논리를 1개 제시하세요. 한국어, 냉철하고 거래 중심적인 화법으로 답하세요."
+    axis: "밸류에이션 적정성 → 딜 구조 리스크(지분/자산 인수, 마일스톤 페이아웃 등) → 엑싯 시나리오, 이 순서로 판단 기준을 고려해 발언합니다. 가능하면 구체적인 딜 구조 대안이나 밸류에이션 논리를 1개 제시하세요. 한국어, 냉철하고 거래 중심적인 화법으로 답하세요."
   },
   fin: {
     label: "재무전문가", cls: "fin", short:"수익·비용", defaultOn:true,
-    system: "당신은 17년간 투자은행 애널리스트와 대기업 재무전략실장으로 일하며 M&A 협상에서 평균 12% 가격 조정을 관철시키고, 투자 승인 프로젝트의 손실률을 35%에서 12%로 낮춘 재무 전문가입니다. 저성과 프로젝트 조기 중단으로 연 200억 규모 매몰비용을 방지했고, '매출은 허영 지표가 될 수 있다, 이익과 현금흐름만이 진짜 성적표다'라는 원칙을 갖고 있습니다. 현금흐름 영향 → 손익분기(BEP) 도달 시점 → 이익률에 대한 영향 → 기회비용, 이 순서로 판단 기준을 고려해 발언합니다. 숫자나 구체적 재무 논리를 최소 1개 언급하세요. 한국어, 보수적이고 신중한 화법으로 답하세요."
+    axis: "현금흐름 영향 → 손익분기(BEP) 도달 시점 → 이익률에 대한 영향 → 기회비용, 이 순서로 판단 기준을 고려해 발언합니다. 숫자나 구체적 재무 논리를 최소 1개 언급하세요. 한국어, 보수적이고 신중한 화법으로 답하세요."
   },
   law: {
     label: "법무사", cls: "law", short:"규제·계약", defaultOn:true,
-    system: "당신은 18년간 대형 로펌 파트너 변호사와 대기업 법무실장으로 일하며 M&A 실사 50건 이상을 수행하고 소송 대리 승소율 82%를 기록한 법률가형 임원입니다. 표준계약서 개정으로 분쟁 발생 시 배상 노출액을 40% 줄였고, '서명 전에 막는 것이 소송 후에 이기는 것보다 100배 싸다'는 원칙을 갖고 있습니다. 계약상 명시 여부 → 관련 법령·인허가 위반 가능성 → 유사 선례 → 리스크 발생 시점, 이 순서로 확인하며 발언합니다. 의료기기·수출 등 규제산업이 언급되면 관련 인허가 이슈를 짚으세요. 한국어, 신중하고 절제된 화법으로 답하세요."
+    axis: "계약상 명시 여부 → 관련 법령·인허가 위반 가능성 → 유사 선례 → 리스크 발생 시점, 이 순서로 확인하며 발언합니다. 의료기기·수출 등 규제산업이 언급되면 관련 인허가 이슈를 짚으세요. 한국어, 신중하고 절제된 화법으로 답하세요."
   },
   oi: {
     label: "오픈이노베이션 담당", cls: "oi", short:"글로벌 협업·제휴", defaultOn:false,
-    system: "당신은 14년간 CVC 심사역과 대기업 오픈이노베이션실장으로 일하며 3년간 45개 스타트업과 PoC를 진행해 9개를 정식 파트너십으로 전환시킨 담당자입니다. 외부 협업 프로젝트는 자체 개발 대비 40% 빠르게 시장에 출시됐고 핵심기술 유출 사고는 0건이며, '지분투자나 인수는 마지막 카드다, 먼저 협업으로 검증하고 통해야 결합 강도를 높인다'는 원칙을 갖고 있습니다. 기술·역량 적합성 → 협업 방식(라이선싱/공동개발/지분투자) 비교 → 파트너 리스크, 이 순서로 판단 기준을 고려해 발언합니다. 협업 방식 중 어느 쪽이 적합한지 구체적으로 짚으세요. 한국어, 개방적이고 협력 지향적인 화법으로 답하세요."
+    axis: "기술·역량 적합성 → 협업 방식(라이선싱/공동개발/지분투자) 비교 → 파트너 리스크, 이 순서로 판단 기준을 고려해 발언합니다. 협업 방식 중 어느 쪽이 적합한지 구체적으로 짚으세요. 한국어, 개방적이고 협력 지향적인 화법으로 답하세요."
   },
   net: {
     label: "스타트업 네트워크 전문가", cls: "net", short:"글로벌 생태계·소싱", defaultOn:false,
-    system: "당신은 13년간 액셀러레이터 파트너와 대기업 스타트업생태계실장으로 일하며 3,000개 이상의 스타트업을 상시 모니터링하고, 3년간 90개 초기 팀과 관계를 구축해 그중 4곳이 유니콘이 된 담당자입니다. 경쟁사보다 먼저 접촉한 선점 접촉률 65%를 기록했고, '딜이 공개 시장에 나왔을 때는 이미 늦은 것이다, 진짜 좋은 관계는 아무도 주목하지 않을 때 만들어진다'는 원칙을 갖고 있습니다. 생태계 접근성 → 후보군 구체성 → 소싱 실행 가능성, 이 순서로 판단 기준을 고려해 발언합니다. 가능하면 구체적인 지역·생태계(실리콘밸리, 이스라엘, 유럽 등)를 언급하세요. 한국어, 네트워킹 중심적인 화법으로 답하세요."
+    axis: "생태계 접근성 → 후보군 구체성 → 소싱 실행 가능성, 이 순서로 판단 기준을 고려해 발언합니다. 가능하면 구체적인 지역·생태계(실리콘밸리, 이스라엘, 유럽 등)를 언급하세요. 한국어, 네트워킹 중심적인 화법으로 답하세요."
   },
   risk: {
     label: "리스크매니저", cls: "risk", short:"위험·대응", defaultOn:true,
-    system: "당신은 16년간 신용평가사 애널리스트와 대기업 리스크관리실장으로 일하며 전사 리스크 매트릭스를 구축해 5년간 대형 리스크 미탐지 사고 0건을 기록한 리스크 전문가입니다. 스트레스 테스트를 통해 누적 800억원 규모의 투자를 축소·보류시켰고, '되돌릴 수 있는 실수와 되돌릴 수 없는 실수는 같은 속도로 결정하면 안 된다'는 원칙을 갖고 있습니다. 발생 가능성 → 영향도 → 비가역성 여부 → 대응·완화 가능 여부, 이 순서로 판단 기준을 고려해 발언합니다. 항상 '만약 ~라면' 형태로 최악의 시나리오 하나를 구체적으로 짚으세요. 한국어, 냉정한 화법으로 답하세요."
+    axis: "발생 가능성 → 영향도 → 비가역성 여부 → 대응·완화 가능 여부, 이 순서로 판단 기준을 고려해 발언합니다. 항상 '만약 ~라면' 형태로 최악의 시나리오 하나를 구체적으로 짚으세요. 한국어, 냉정한 화법으로 답하세요."
   }
 };
-const FULL_ORDER = ["biz","strat","pe","fin","law","oi","net","risk"];
+const BUILTIN_ORDER = ["biz","strat","pe","fin","law","oi","net","risk"];
+let FULL_ORDER = BUILTIN_ORDER.slice();
+
+const BUILTIN_COLORS = {
+  biz:{c:'#B0742C',bg:'#FBF0DF',tx:'#7A4E15'},
+  strat:{c:'#4A4A9E',bg:'#ECEBF8',tx:'#34346F'},
+  pe:{c:'#9C3565',bg:'#FAE9F0',tx:'#6E2547'},
+  fin:{c:'#166F5C',bg:'#E3F3EE',tx:'#0F4E40'},
+  law:{c:'#2C5C93',bg:'#E6EFF9',tx:'#1E4370'},
+  oi:{c:'#4C7A2E',bg:'#EEF5E7',tx:'#365821'},
+  net:{c:'#1E7A8C',bg:'#E5F3F5',tx:'#155763'},
+  risk:{c:'#B03A2E',bg:'#FBEBE8',tx:'#7E2A21'},
+  mod:{c:'#5B4A8A',bg:'#EFEBF7',tx:'#40315F'}
+};
+const CUSTOM_PALETTE = [
+  {c:'#8A5A44',bg:'#F5EAE2',tx:'#5F3D2C'},
+  {c:'#3F6B4F',bg:'#E7F1EA',tx:'#254A32'},
+  {c:'#6B4C9A',bg:'#EFE8F7',tx:'#4A3269'},
+  {c:'#B8860B',bg:'#FBF3DD',tx:'#7A5A08'},
+  {c:'#4472A8',bg:'#E6EEF7',tx:'#2E4E73'},
+  {c:'#A34A6B',bg:'#F8E9EF',tx:'#742F4A'},
+  {c:'#5C7A7A',bg:'#E9F1F1',tx:'#3B5252'},
+  {c:'#8C6A2E',bg:'#F6EEDD',tx:'#5E4720'}
+];
+
+const CUSTOM_ROLES_KEY = 'council_custom_roles_v1';
+
+function loadCustomRoles(){
+  try{
+    const raw = localStorage.getItem(CUSTOM_ROLES_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+
+function saveCustomRoles(list){
+  localStorage.setItem(CUSTOM_ROLES_KEY, JSON.stringify(list));
+}
+
+let customRoles = loadCustomRoles(); // [{key,label,short,axis,resumeText,defaultOn,color}]
+
+function applyCustomRolesToState(){
+  FULL_ORDER = BUILTIN_ORDER.concat(customRoles.map(r=>r.key));
+  customRoles.forEach(r => {
+    ROLES[r.key] = { label:r.label, cls:'custom', short:r.short, axis:r.axis, defaultOn:!!r.defaultOn };
+  });
+}
+applyCustomRolesToState();
+
+function getRoleColor(key){
+  if(BUILTIN_COLORS[key]) return BUILTIN_COLORS[key];
+  const rec = customRoles.find(r=>r.key===key);
+  if(rec && rec.color) return rec.color;
+  return {c:'#8A8579', bg:'#EDEAE1', tx:'#3A3628'};
+}
+
+function whoTag(key, labelText){
+  const col = getRoleColor(key);
+  return `<span class="who" style="background:${col.bg};color:${col.tx};">${labelText}</span>`;
+}
+
+function isCustomRole(key){
+  return customRoles.some(r => r.key === key);
+}
 
 const RESUMES = {
   biz: {
@@ -500,9 +592,13 @@ function buildSeats(){
   const grid = document.getElementById('seatsGrid');
   grid.innerHTML = FULL_ORDER.map(key => {
     const r = ROLES[key];
+    const removeBtn = isCustomRole(key)
+      ? `<button type="button" class="seat-remove" title="이 페르소나 삭제" onclick="removeCustomPersona('${key}')">×</button>`
+      : '';
     return `<div class="seat ${r.cls}${r.defaultOn?'':' off'}" id="seat-${key}">
+      ${removeBtn}
       <span class="role">${r.label}</span>${r.short}
-      <button type="button" class="resume-link" onclick="openResume('${key}')">이력서 보기</button>
+      <button type="button" class="resume-link" onclick="openResume('${key}', false)">이력서 보기</button>
       <span class="status" id="status-${key}">대기</span>
       <label class="chk"><input type="checkbox" id="chk-${key}" ${r.defaultOn?'checked':''} onchange="onSeatToggle('${key}')"></label>
     </div>`;
@@ -523,53 +619,116 @@ function onSeatToggle(key){
 buildSeats();
 updateRoundsLabel();
 
-function renderResumeHtml(key){
+const RESUME_STORAGE_PREFIX = 'council_resume_v1_';
+
+function buildDefaultResumeText(key){
+  const custom = customRoles.find(r=>r.key===key);
+  if(custom) return custom.resumeText || '';
   const r = RESUMES[key];
+  if(!r) return '';
+  const lines = [];
+  lines.push(r.identity);
+  lines.push('');
+  lines.push('[경력 사항]');
+  r.career.forEach(c => {
+    lines.push(`${c.role} | ${c.org} | ${c.period}`);
+    c.bullets.forEach(b => lines.push('- ' + b));
+    lines.push('');
+  });
+  lines.push('[트랙레코드]');
+  r.track.forEach(t => lines.push(`- ${t.label}: ${t.value}`));
+  lines.push('');
+  lines.push('[의사결정 철학]');
+  r.philosophy.forEach(p => lines.push(`- "${p}"`));
+  lines.push('');
+  lines.push('[발언 톤 예시]');
+  lines.push(r.sample);
+  return lines.join('\n');
+}
+
+function getResumeText(key){
+  const saved = localStorage.getItem(RESUME_STORAGE_PREFIX + key);
+  return (saved !== null) ? saved : buildDefaultResumeText(key);
+}
+
+function setResumeText(key, text){
+  localStorage.setItem(RESUME_STORAGE_PREFIX + key, text);
+}
+
+function isResumeEdited(key){
+  return localStorage.getItem(RESUME_STORAGE_PREFIX + key) !== null;
+}
+
+function resetResumeText(key){
+  localStorage.removeItem(RESUME_STORAGE_PREFIX + key);
+}
+
+// 실제 API 호출에 쓰이는 system 프롬프트: 이력서(가변, 편집 가능) + 판단축/화법 지침(고정)을 매번 조합
+function getRoleSystem(key){
   const role = ROLES[key];
-  if(!r || !role) return '';
-  const careerHtml = r.career.map(c => `
-    <div class="career-item">
-      <div class="role-period">${c.role} <span class="org">| ${c.org} | ${c.period}</span></div>
-      <ul>${c.bullets.map(b=>`<li>${b}</li>`).join('')}</ul>
-    </div>`).join('');
-  const trackHtml = r.track.map(t => `<tr><td>${t.label}</td><td>${t.value}</td></tr>`).join('');
-  const philHtml = r.philosophy.map(p => `<li>"${p}"</li>`).join('');
+  if(!role) return '';
+  return getResumeText(key) + ' ' + role.axis;
+}
+
+function renderResumeHtml(key, editMode){
+  const r = RESUMES[key]; // 없으면 커스텀 페르소나
+  const role = ROLES[key];
+  if(!role) return '';
+  const text = getResumeText(key);
+  const edited = isResumeEdited(key);
+  const custom = isCustomRole(key);
+
+  const bodyHtml = editMode
+    ? `<textarea id="resumeTextarea" class="resume-textarea">${escapeHtml(text)}</textarea>
+       <p class="resume-hint">이 내용이 회의에서 이 페르소나의 배경 지식(system 프롬프트 일부)으로 그대로 사용됩니다. 저장하면 다음 발언부터 바로 반영됩니다.</p>
+       <div class="resume-actions">
+         <button type="button" class="btn-primary" onclick="saveResume('${key}')">저장</button>
+         <button type="button" class="btn-secondary" onclick="openResume('${key}', false)">취소</button>
+         <button type="button" class="btn-ghost" onclick="doResetResume('${key}')">기본값으로 초기화</button>
+       </div>`
+    : `<div class="resume-body-view">${escapeHtml(text)}</div>
+       <div class="resume-actions">
+         <button type="button" class="btn-primary" onclick="openResume('${key}', true)">이력서 수정</button>
+         ${edited ? `<button type="button" class="btn-ghost" onclick="doResetResume('${key}')">기본값으로 초기화</button><span class="edited-badge">수정됨 · AI 발언에 반영 중</span>` : ''}
+         ${custom ? `<button type="button" class="btn-ghost" onclick="removeCustomPersona('${key}')">이 페르소나 삭제</button>` : ''}
+       </div>`;
+
+  const headHtml = r
+    ? `<p class="resume-name">${r.name}</p>
+       <p class="resume-title">${r.title}</p>
+       <p class="resume-oneline">"${r.oneline}"</p>`
+    : `<p class="resume-title">${role.short}</p>`;
+
   return `
     <button type="button" class="modal-close" onclick="closeResume()">×</button>
     <div class="resume-head">
-      <span class="who ${role.cls}">${role.label}</span>
-      <p class="resume-name">${r.name}</p>
-      <p class="resume-title">${r.title}</p>
-      <p class="resume-oneline">"${r.oneline}"</p>
+      ${whoTag(key, role.label)}
+      ${headHtml}
     </div>
     <div class="resume-section">
-      <h4>핵심 정체성</h4>
-      <p>${r.identity}</p>
-    </div>
-    <div class="resume-section">
-      <h4>경력 사항</h4>
-      ${careerHtml}
-    </div>
-    <div class="resume-section">
-      <h4>트랙레코드</h4>
-      <table class="track-table">${trackHtml}</table>
-    </div>
-    <div class="resume-section">
-      <h4>의사결정 철학</h4>
-      <ul class="philosophy-list">${philHtml}</ul>
-    </div>
-    <div class="resume-section">
-      <h4>발언 톤 예시</h4>
-      <div class="sample-quote">${r.sample}</div>
+      ${bodyHtml}
     </div>
   `;
 }
 
-function openResume(key){
+function openResume(key, editMode){
   const card = document.getElementById('resumeCard');
-  card.innerHTML = renderResumeHtml(key);
+  card.innerHTML = renderResumeHtml(key, !!editMode);
   card.scrollTop = 0;
   document.getElementById('resumeModal').classList.add('show');
+}
+
+function saveResume(key){
+  const val = document.getElementById('resumeTextarea').value;
+  setResumeText(key, val);
+  openResume(key, false);
+}
+
+function doResetResume(key){
+  if(confirm('기본 이력서로 초기화할까요? 수정한 내용은 사라집니다.')){
+    resetResumeText(key);
+    openResume(key, false);
+  }
 }
 
 function closeResume(){
@@ -581,8 +740,135 @@ function closeResumeIfOutside(e){
 }
 
 document.addEventListener('keydown', (e) => {
-  if(e.key === 'Escape') closeResume();
+  if(e.key === 'Escape'){ closeResume(); closeAddPersonaModal(); }
 });
+
+// ===== 페르소나 추가 기능 =====
+
+function renderAddPersonaForm(errorMsg){
+  return `
+    <button type="button" class="modal-close" onclick="closeAddPersonaModal()">×</button>
+    <div class="resume-head">
+      <p class="resume-name">새 페르소나 추가</p>
+      <p class="resume-title">역할명, 판단 기준, 배경 이력서를 입력하면 회의에 바로 참여할 수 있습니다.</p>
+    </div>
+    ${errorMsg ? `<p class="form-error">${escapeHtml(errorMsg)}</p>` : ''}
+    <div class="form-field">
+      <label for="np-label">역할명 *</label>
+      <input type="text" id="np-label" placeholder="예: 마케팅 총괄">
+    </div>
+    <div class="form-field">
+      <label for="np-short">참석자 카드에 표시할 한 줄 설명 *</label>
+      <input type="text" id="np-short" placeholder="예: 브랜드·소비자 반응">
+    </div>
+    <div class="form-field">
+      <label for="np-axis">판단 기준 / 화법 지침 *</label>
+      <textarea id="np-axis" rows="4" placeholder="예: 브랜드 적합성 → 소비자 반응 → 채널 효율, 이 순서로 판단 기준을 고려해 발언합니다. 한국어, 감각적이고 트렌드 중심적인 화법으로 답하세요."></textarea>
+      <p class="hint">회의 중 이 페르소나가 어떤 순서로 판단하고 어떤 말투로 말할지 정하는 부분입니다. 다른 페르소나들과 겹치지 않는 축을 쓰면 토론이 더 풍부해집니다.</p>
+    </div>
+    <div class="form-field">
+      <label for="np-resume">배경 이력서 (경력·성과·원칙 등, 자유 서술) *</label>
+      <textarea id="np-resume" rows="10" placeholder="예: 15년간 소비재 기업 CMO로 재직하며 신제품 런칭 캠페인을 다수 주도한 마케팅 전문가입니다. ..."></textarea>
+      <p class="hint">이 내용이 회의 중 AI 발언의 배경 지식으로 그대로 사용됩니다. 실제 인물의 실명이나 소속을 특정하지 않는 것을 권장합니다.</p>
+    </div>
+    <div class="form-field checkbox-row">
+      <input type="checkbox" id="np-defaulton">
+      <label for="np-defaulton">추가 즉시 회의 참석자로 체크</label>
+    </div>
+    <div class="resume-actions">
+      <button type="button" class="btn-primary" onclick="submitNewPersona()">추가하기</button>
+      <button type="button" class="btn-secondary" onclick="closeAddPersonaModal()">취소</button>
+    </div>
+  `;
+}
+
+function openAddPersonaModal(){
+  document.getElementById('addPersonaCard').innerHTML = renderAddPersonaForm();
+  document.getElementById('addPersonaModal').classList.add('show');
+}
+
+function closeAddPersonaModal(){
+  const modal = document.getElementById('addPersonaModal');
+  if(modal) modal.classList.remove('show');
+}
+
+function closeAddPersonaIfOutside(e){
+  if(e.target.id === 'addPersonaModal') closeAddPersonaModal();
+}
+
+function submitNewPersona(){
+  const label = document.getElementById('np-label').value.trim();
+  const short = document.getElementById('np-short').value.trim();
+  const axis = document.getElementById('np-axis').value.trim();
+  const resumeText = document.getElementById('np-resume').value.trim();
+  const defaultOn = document.getElementById('np-defaulton').checked;
+
+  if(!label || !short || !axis || !resumeText){
+    document.getElementById('addPersonaCard').innerHTML = renderAddPersonaForm('역할명, 한 줄 설명, 판단 기준, 배경 이력서를 모두 입력해 주세요.');
+    return;
+  }
+
+  const key = 'custom_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+  const color = CUSTOM_PALETTE[customRoles.length % CUSTOM_PALETTE.length];
+  const record = { key, label, short, axis, resumeText, defaultOn, color };
+
+  customRoles.push(record);
+  saveCustomRoles(customRoles);
+  applyCustomRolesToState();
+
+  closeAddPersonaModal();
+  buildSeats();
+  updateRoundsLabel();
+}
+
+function removeCustomPersona(key){
+  if(!confirm('이 페르소나를 삭제할까요? 저장된 이력서 수정 내용도 함께 삭제됩니다.')) return;
+  customRoles = customRoles.filter(r => r.key !== key);
+  saveCustomRoles(customRoles);
+  delete ROLES[key];
+  resetResumeText(key); // localStorage에 남아있던 수정본 정리
+  applyCustomRolesToState();
+  closeResume();
+  buildSeats();
+  updateRoundsLabel();
+}
+
+// ===== 이력서 백업(txt) 기능 =====
+
+function backupResumes(){
+  const checkedKeys = FULL_ORDER.filter(k => {
+    const el = document.getElementById('chk-' + k);
+    return el && el.checked;
+  });
+  if(checkedKeys.length === 0){
+    alert('체크된 참석자가 없습니다. 먼저 회의에 참석시킬 페르소나를 선택해 주세요.');
+    return;
+  }
+
+  const now = new Date();
+  const ts = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+
+  const blocks = checkedKeys.map(key => {
+    const role = ROLES[key];
+    const r = RESUMES[key];
+    const header = r ? `[${role.label}] ${r.name} · ${r.title}` : `[${role.label}] ${role.short}`;
+    const edited = isResumeEdited(key) ? ' (수정됨)' : '';
+    const body = getResumeText(key);
+    return `${'='.repeat(50)}\n${header}${edited}\n${'-'.repeat(50)}\n${body}`;
+  });
+
+  const fileText = `AI 자문위원회 · 이력서 백업\n생성 시각: ${now.toLocaleString('ko-KR')}\n참석자: ${checkedKeys.map(k=>ROLES[k].label).join(', ')}\n\n` + blocks.join('\n\n');
+
+  const blob = new Blob([fileText], {type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `AI자문위원회_이력서백업_${ts}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 
 let attachments = [];
 
@@ -712,9 +998,11 @@ function mdToHtml(raw){
 }
 
 function setSeat(key, status, active){
-  document.querySelectorAll('.seat').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.seat').forEach(s=>{ s.classList.remove('active'); s.style.color = ''; });
   if(active){
-    document.getElementById('seat-'+key).classList.add('active');
+    const el = document.getElementById('seat-'+key);
+    el.classList.add('active');
+    el.style.color = getRoleColor(key).c;
   }
   document.getElementById('status-'+key).textContent = status;
 }
@@ -759,12 +1047,12 @@ async function callAgent(system, transcriptText, maxTokens, mediaBlocks, tempera
   throw new Error("empty response");
 }
 
-function appendEntry(cls, label, text, isTyping){
+function appendEntry(key, label, text, isTyping){
   const log = document.getElementById('log');
   if(log.querySelector('.empty')) log.innerHTML = '';
   const div = document.createElement('div');
   div.className = 'entry';
-  div.innerHTML = `<span class="who ${cls}">${label}</span><p>${isTyping ? '<span class="typing">발언 준비중</span>' : mdToHtml(text)}</p>`;
+  div.innerHTML = `${whoTag(key, label)}<p>${isTyping ? '<span class="typing">발언 준비중</span>' : mdToHtml(text)}</p>`;
   log.appendChild(div);
   log.scrollTop = log.scrollHeight;
   return div;
@@ -841,11 +1129,11 @@ async function startMeeting(){
       const role = ROLES[nextKey];
 
       setSeat(nextKey, '발언중', true);
-      const entryDiv = appendEntry(role.cls, `${role.label} · ${t}번째 발언`, '', true);
+      const entryDiv = appendEntry(nextKey, `${role.label} · ${t}번째 발언`, '', true);
       const issueLine = lastIssue ? `\n\n[사회자가 짚은 쟁점] ${lastIssue}\n위 쟁점에 대한 당신의 입장을 우선적으로 다루세요.` : '';
       const transcript = history.join('\n\n') + issueLine + `\n\n---\n지금까지의 회의 내용을 참고하여 발언하세요. 첨부된 이미지나 문서가 있다면 그 내용을 근거로 활용하세요. 반드시 완결된 문장으로 끝내세요.`;
-      const text = await callAgent(role.system + ' ' + COMMON_RULES, transcript, 800, mediaBlocks, 0.5);
-      entryDiv.innerHTML = `<span class="who ${role.cls}">${role.label} · ${t}번째 발언</span><p>${mdToHtml(text)}</p>`;
+      const text = await callAgent(getRoleSystem(nextKey) + ' ' + COMMON_RULES, transcript, 800, mediaBlocks, 0.5);
+      entryDiv.innerHTML = `${whoTag(nextKey, `${role.label} · ${t}번째 발언`)}<p>${mdToHtml(text)}</p>`;
       history.push(`[${role.label}] ${text}`);
       spoken[nextKey]++;
       lastSpeaker = nextKey;
@@ -858,7 +1146,7 @@ async function startMeeting(){
         const issueDiv = appendEntry('mod', '사회자 · 쟁점 포착', '', true);
         const issueSystem = "당신은 회의 사회자입니다. 지금까지 나온 발언들 중 참석자들 사이에 가장 첨예하게 의견이 갈리는 쟁점 하나를 골라, 어느 참석자와 어느 참석자가 왜 부딪히는지 구체적으로 짚어 1~2문장으로 요약하세요. 마크다운 기호 없이 일반 텍스트로, 한국어로 답하세요.";
         const issueText = await callAgent(issueSystem, history.join('\n\n') + '\n\n---\n지금까지 회의에서 가장 의견이 갈리는 쟁점을 짚어주세요.', 300, mediaBlocks, 0.4);
-        issueDiv.innerHTML = `<span class="who mod">사회자 · 쟁점 포착</span><p>${mdToHtml(issueText)}</p>`;
+        issueDiv.innerHTML = `${whoTag('mod', '사회자 · 쟁점 포착')}<p>${mdToHtml(issueText)}</p>`;
         history.push(`[사회자 - 쟁점] ${issueText}`);
         lastIssue = issueText;
         document.getElementById('meta').textContent = '진행중';
@@ -871,7 +1159,7 @@ async function startMeeting(){
     const roleList = activeOrder.map(k=>ROLES[k].label).join('/');
     const modSystem = `당신은 회의 사회자입니다. 지금까지 참석한 ${activeOrder.length}명(${roleList})의 발언을 종합해 (1) 각 참석자의 핵심 입장 한 줄씩, (2) 의견이 갈리는 지점 최대 2가지, (3) 근거를 함께 제시한 사회자로서의 종합 권고안 순서로 정리하세요. 권고안 중 회의에서 명시적으로 확인되지 않은 가정에 기반한 부분은 '가정'이라고 표시하세요. 마크다운 기호(#, **, 번호 매기기)는 쓰지 말고 일반 텍스트로만 작성하세요. 각 항목은 2문장 이내로 간결하게 쓰고, 전체 응답은 참석 인원 수에 비례해 늘려도 되지만 항목당 분량은 넘기지 마세요. 한국어로, 반드시 (3) 종합 권고안까지 완결된 문장으로 마무리하세요.`;
     const modText = await callAgent(modSystem, history.join('\n\n') + '\n\n---\n위 회의 내용을 종합 정리하세요.', 2200, mediaBlocks, 0.4);
-    modDiv.innerHTML = `<span class="who mod">사회자 종합</span><p>${mdToHtml(modText)}</p><span class="stamp">회의 종료</span>`;
+    modDiv.innerHTML = `${whoTag('mod', '사회자 종합')}<p>${mdToHtml(modText)}</p><span class="stamp">회의 종료</span>`;
     moderatorSummary = modText;
     document.getElementById('meta').textContent = '종료';
     document.getElementById('exportBtn').disabled = false;
